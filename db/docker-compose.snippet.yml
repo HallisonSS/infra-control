@@ -3,7 +3,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: assist
-      POSTGRES_PASSWORD: k9H5f$se9J7G*209
+      POSTGRES_PASSWORD:
       POSTGRES_DB: assistdb
     volumes:
       - ./db/data:/var/lib/postgresql/data
