@@ -41,7 +41,7 @@ def log_audit(conn, event_type, source, input_d=None, decision_d=None, command=N
 def llm_plan(prompt):
     if USE_OLLAMA:
         # formato simples para ollama
-        data = {"model":"llama3.1:8b", "prompt": prompt, "stream": False}
+        data = {"model":"qwen2.5:1.5b", "prompt": prompt, "stream": False}
         resp = httpx.post(f"{OLLAMA_URL}/api/generate", json=data, timeout=60)
         resp.raise_for_status()
         return resp.json().get("response","")
@@ -57,25 +57,6 @@ def decide_remediation(alert):
     labels = json.loads(alert.get("labels","{}"))
     annotations = json.loads(alert.get("annotations","{}"))
     hint = annotations.get("summary","") or annotations.get("description","")
-
-def process_approved(conn):
-    while True:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, action, params FROM approvals WHERE status='approved' ORDER BY id ASC LIMIT 10")
-            rows = cur.fetchall()
-        for id_, action, params in rows:
-            p = json.loads(params)
-            try:
-                validate_params(action, p)
-                cmd_tpl = POLICY_SAFE_ACTIONS[action]["cmd"]
-                cmd = cmd_tpl.format(**p)
-                code, out, err = run_command(cmd)
-                log_audit(conn, "execution", "approval", decision_d={"action":action,"params":p}, command=cmd, stdout=out, stderr=err, exit_code=code)
-            finally:
-                with conn.cursor() as cur:
-                    cur.execute("UPDATE approvals SET status='reconciled' WHERE id=%s", (id_,))
-                conn.commit()
-        time.sleep(5)
 
     # Regras simples
     if "InstanceDown" in labels.get("alertname",""):
@@ -180,6 +161,25 @@ def process_actions(conn):
                 except Exception as e:
                     log_audit(conn, "decision", "api", input_d=fields, decision_d={"error":str(e)}, user_context=req_by)
                 r.xack(ACTIONS_STREAM, GROUP, msg_id)
+
+def process_approved(conn):
+    while True:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, action, params FROM approvals WHERE status='approved' ORDER BY id ASC LIMIT 10")
+            rows = cur.fetchall()
+        for id_, action, params in rows:
+            p = json.loads(params)
+            try:
+                validate_params(action, p)
+                cmd_tpl = POLICY_SAFE_ACTIONS[action]["cmd"]
+                cmd = cmd_tpl.format(**p)
+                code, out, err = run_command(cmd)
+                log_audit(conn, "execution", "approval", decision_d={"action":action,"params":p}, command=cmd, stdout=out, stderr=err, exit_code=code)
+            finally:
+                with conn.cursor() as cur:
+                    cur.execute("UPDATE approvals SET status='reconciled' WHERE id=%s", (id_,))
+                conn.commit()
+        time.sleep(5)
 
 if __name__ == "__main__":
     with psycopg.connect(DB_DSN) as conn:
