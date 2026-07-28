@@ -4,15 +4,15 @@ import psycopg
 import httpx
 
 r = redis.Redis(host=os.getenv("REDIS_HOST","redis"), port=int(os.getenv("REDIS_PORT","6379")), decode_responses=True)
+
 ALERTS_STREAM = os.getenv("ALERTS_STREAM","alerts_stream")
 DECISIONS_STREAM = os.getenv("DECISIONS_STREAM","decisions_stream")
 ACTIONS_STREAM = os.getenv("ACTIONS_STREAM","actions_stream")
 GROUP = os.getenv("WORKER_GROUP","assist_group")
-
 DB_DSN = os.getenv("DB_DSN","postgresql://assist:strong_password_here@postgres:5432/assistdb")
 
 USE_OLLAMA = os.getenv("USE_OLLAMA","true") == "true"
-OLLAMA_URL = os.getenv("OLLAMA_URL","ollamahttp://ollama:11434")
+OLLAMA_URL = os.getenv("OLLAMA_URL","http://ollama:11434")
 OPENAI_URL = os.getenv("OPENAI_BASE_URL","")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY","")
 
