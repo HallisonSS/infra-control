@@ -1,23 +1,23 @@
 # ai-assistent
 
-1) Requisitos e arquitetura
+1) Requisitos e Arquitetura
+   
    Objetivo: o assistente deve:
-
    Monitorar recursos (CPU, RAM, disco, processos, serviços, portas).
    Ler logs e alertas.
    Decidir ações de remediação com base em regras e/ou LLM.
    Executar ações pré-aprovadas e registrar tudo (entrada, decisão, comando, saída).
    Solicitar aprovação humana quando necessário (RBAC).
    Expor API e painel.
-   Componentes:
-   observabilidade/: Prometheus, Alertmanager, Grafana, Loki, Promtail, Node Exporter
+   
+   Componentes: observabilidade/: Prometheus, Alertmanager, Grafana, Loki, Promtail, Node Exporter
    bus/: Redis
    agent/: FastAPI (API), Celery worker (tarefas), Regras/Políticas, Conectores LLM
    executor/: Playbooks Ansible, scripts shell wrappers, whitelists sudoers
    db/: Postgres (RBAC, auditoria, estado)
-   llm/: Ollama (modelos locais) ou conector externo
+   llm/: Ollama (modelos locais) ou conector externo.
+   
    Fluxo:
-
    Exporters e Promtail enviam métricas/logs.
    Alertmanager gera alerta → publica em Redis.
    Worker lê o evento, aplica políticas e, quando indicado, consulta LLM para plano de ação.
@@ -25,7 +25,7 @@
    API expõe status, aprovações pendentes e histórico.
    Grafana dashboards e anotações.
 
-2) Preparação do servidor Ubuntu
+3) Preparação do servidor Ubuntu
    Ubuntu 22.04 LTS ou 24.04 LTS
    Usuário com sudo sem senha? Não. Usaremos sudo com regras específicas.
    Atualize e instale base:
