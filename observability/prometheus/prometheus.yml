@@ -11,7 +11,3 @@ scrape_configs:
 rule_files:
   - /etc/prometheus/alerts.yml
 
-  volumes:
-  - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-  - ../observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
-
